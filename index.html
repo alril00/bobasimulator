@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Boba Farm & Kitchen 🧋🌾</title>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        html, body {
+            width: 100%; height: 100%; margin: 0; padding: 0;
+            overflow: hidden; background-color: #f7ede2;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #634832; user-select: none;
+        }
+        .app-wrapper {
+            display: flex; flex-direction: column; justify-content: space-between;
+            height: 100vh; height: 100dvh; max-width: 480px; margin: 0 auto;
+            padding: 10px; background: #e3d5ca; position: relative;
+        }
+
+        /* Хедер */
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #d5bdaf; padding: 8px 12px; border-radius: 12px;
+            font-weight: bold; font-size: 14px;
+        }
+        .pause-btn {
+            background: #634832; color: #fff; border: none;
+            padding: 6px 10px; border-radius: 8px; cursor: pointer;
+            font-size: 12px; font-weight: bold;
+        }
+
+        /* Оверлеи (Пауза и Магазин) */
+        .modal-overlay {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(99, 72, 50, 0.85); backdrop-filter: blur(4px);
+            display: none; flex-direction: column; justify-content: center;
+            align-items: center; color: #fff; z-index: 100; padding: 20px;
+        }
+        .modal-card {
+            background: #f5ebe0; color: #634832; border-radius: 16px;
+            padding: 18px; width: 100%; max-width: 340px; text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+        .modal-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; }
+
+        /* Клиент */
+        .customer-section {
+            background: #f5ebe0; border-radius: 14px; padding: 10px;
+            margin-top: 6px; box-shadow: inset 0 0 5px rgba(0,0,0,0.05);
+        }
+        .customer-card { display: flex; align-items: center; gap: 10px; }
+        .customer-avatar { font-size: 34px; }
+        .customer-info { flex: 1; }
+        .customer-title { font-weight: bold; font-size: 13px; margin-bottom: 2px; }
+        .recipe-tag {
+            background: #e3d5ca; padding: 2px 6px; border-radius: 6px;
+            font-size: 11px; display: inline-block; margin-right: 4px; margin-top: 2px;
+        }
+        .patience-bar {
+            height: 5px; background: #e76f51; border-radius: 3px;
+            margin-top: 6px; transition: width 0.2s linear;
+        }
+
+        /* Игровая зона */
+        .main-layout {
+            flex: 1; display: flex; gap: 10px; align-items: center;
+            justify-content: space-between; margin: 4px 0;
+        }
+        .glass-container {
+            flex: 1; display: flex; flex-direction: column; align-items: center;
+        }
+        canvas { background: transparent; max-height: 200px; }
+
+        /* Ингредиенты */
+        .controls { flex: 1.1; display: flex; flex-direction: column; gap: 6px; }
+        .control-row {
+            display: flex; justify-content: space-between; align-items: center;
+            background: #f5ebe0; padding: 6px 8px; border-radius: 10px; font-size: 11px;
+        }
+        .stock-count { font-size: 10px; color: #8c6d53; display: block; }
+        .btn-counter {
+            background: #d5bdaf; border: none; width: 26px; height: 26px;
+            border-radius: 8px; font-weight: bold; cursor: pointer; color: #634832; font-size: 14px;
+        }
+
+        /* Блок Кухни и Поставок */
+        .farm-section {
+            background: #f5ebe0; border-radius: 12px; padding: 8px; margin-bottom: 4px;
+        }
+        .farm-header-row {
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;
+        }
+        .farm-title { font-size: 11px; font-weight: bold; }
+        .shop-open-btn {
+            background: #b07d62; color: #fff; border: none; padding: 4px 8px;
+            border-radius: 8px; font-size: 10px; font-weight: bold; cursor: pointer;
+        }
+        .farm-grid { display: flex; gap: 6px; }
+        .farm-btn {
+            flex: 1; background: #d5bdaf; border: none; padding: 6px 4px;
+            border-radius: 8px; font-size: 10px; font-weight: bold; color: #634832;
+            cursor: pointer; text-align: center;
+        }
+        .farm-btn:disabled { opacity: 0.6; cursor: wait; }
+
+        /* Кнопки заказа в магазине */
+        .shop-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
+        .shop-item-btn {
+            background: #d5bdaf; color: #634832; border: none; padding: 10px;
+            border-radius: 10px; font-weight: bold; font-size: 12px; cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .shop-item-btn:active { background: #c3a995; }
+
+        /* Сообщения внизу */
+        .status-msg {
+            text-align: center; font-size: 12px; font-weight: bold;
+            margin-bottom: 6px; min-height: 16px; color: #423021;
+        }
+
+        /* Нижние кнопки */
+        .action-row { display: flex; gap: 8px; }
+        .action-btn {
+            background: #634832; color: #fff; border: none; padding: 10px;
+            border-radius: 12px; font-size: 13px; font-weight: bold; cursor: pointer;
+            box-shadow: 0 4px 0 #423021;
+        }
+        .action-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #423021; }
+        .action-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        .btn-serve { flex: 1; }
+    </style>
+</head>
+<body>
+
+<div class="app-wrapper">
+    <!-- Оверлей Паузы -->
+    <div class="modal-overlay" id="pauseOverlay">
+        <h2>Пауза ☕</h2>
+        <button class="action-btn" style="width: 150px;" onclick="togglePause()">Продолжить</button>
+    </div>
+
+    <!-- Модальное окно Магазина "Сделать заказ" -->
+    <div class="modal-overlay" id="shopOverlay">
+        <div class="modal-card">
+            <div class="modal-title">📦 Оптовые поставки</div>
+            <div class="shop-list">
+                <button class="shop-item-btn" onclick="buyStock('tea', 10, 15)">
+                    <span>🫖 Заказать чай (+10)</span>
+                    <span>15 $</span>
+                </button>
+                <button class="shop-item-btn" onclick="buyStock('syrup', 10, 20)">
+                    <span>🍯 Заказать сироп (+10)</span>
+                    <span>20 $</span>
+                </button>
+                <button class="shop-item-btn" onclick="buyStock('boba', 20, 25)">
+                    <span>⚫ Заказать шарики (+20)</span>
+                    <span>25 $</span>
+                </button>
+            </div>
+            <button class="action-btn" style="width: 100%; padding: 8px;" onclick="toggleShop(false)">Закрыть</button>
+        </div>
+    </div>
+
+    <!-- Верхняя панель -->
+    <div class="header">
+        <span>Boba Farm 🌾</span>
+        <span>Баланс: <span id="money">100</span> $</span>
+        <button class="pause-btn" id="pauseBtn" onclick="togglePause()">⏸ Пауза</button>
+    </div>
+
+    <!-- Карточка клиента -->
+    <div class="customer-section">
+        <div class="customer-card">
+            <div class="customer-avatar" id="cAvatar">🐱</div>
+            <div class="customer-info">
+                <div class="customer-title" id="cName">Загрузка...</div>
+                <div id="cOrder"></div>
+                <div class="patience-bar" id="patienceBar" style="width: 100%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Стакан и Сборка -->
+    <div class="main-layout">
+        <div class="glass-container">
+            <canvas id="bobaCanvas" width="130" height="200"></canvas>
+            <button class="action-btn" style="padding: 4px 8px; font-size: 10px; margin-top: 2px; background:#a88871;" onclick="resetCup()">Вылить всё</button>
+        </div>
+
+        <div class="controls">
+            <div class="control-row">
+                <div>
+                    <b>🥛 Чай: <span id="valTea">0</span></b>
+                    <span class="stock-count">Запас: <b id="stockTea">10</b></span>
+                </div>
+                <div>
+                    <button class="btn-counter" onclick="addIng('tea', -1)">-</button>
+                    <button class="btn-counter" onclick="addIng('tea', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div>
+                    <b>🍯 Сироп: <span id="valSyrup">0</span></b>
+                    <span class="stock-count">Запас: <b id="stockSyrup">10</b></span>
+                </div>
+                <div>
+                    <button class="btn-counter" onclick="addIng('syrup', -1)">-</button>
+                    <button class="btn-counter" onclick="addIng('syrup', 1)">+</button>
+                </div>
+            </div>
+
+            <div class="control-row">
+                <div>
+                    <b>⚫ Тапиока: <span id="valBoba">0</span></b>
+                    <span class="stock-count">Запас: <b id="stockBoba">20</b></span>
+                </div>
+                <div>
+                    <button class="btn-counter" onclick="addIng('boba', -1)">-</button>
+                    <button class="btn-counter" onclick="addIng('boba', 1)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кухня и закупка -->
+    <div class="farm-section">
+        <div class="farm-header-row">
+            <span class="farm-title">🌾 Заготовка на кухне</span>
+            <button class="shop-open-btn" onclick="toggleShop(true)">🛒 Сделать заказ</button>
+        </div>
+        <div class="farm-grid">
+            <button class="farm-btn" id="btnCookTea" onclick="cookIngredient('tea')">
+                🫖 Варить Чай<br><small>+5 шт (3 с)</small>
+            </button>
+            <button class="farm-btn" id="btnCookSyrup" onclick="cookIngredient('syrup')">
+                🍯 Варить Сироп<br><small>+5 шт (4 с)</small>
+            </button>
+            <button class="farm-btn" id="btnCookBoba" onclick="cookIngredient('boba')">
+                ⚫ Варить Шарики<br><small>+10 шт (5 с)</small>
+            </button>
+        </div>
+    </div>
+
+    <!-- Сообщение перенесено вниз -->
+    <div class="status-msg" id="statusMsg"></div>
+
+    <!-- Подача заказа -->
+    <div class="action-row">
+        <button class="action-btn btn-serve" id="serveBtn" onclick="serveCustomer()">Отдать заказ 💸</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('bobaCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let money = 100;
+    let cup = { tea: 0, syrup: 0, boba: 0 };
+    let stock = { tea: 10, syrup: 10, boba: 20 };
+    let balls = [];
+    let isPaused = false;
+
+    const customerTypes = [
+        { name: "Котик-сладкоежка", avatar: "🐱" },
+        { name: "Лягушонок", avatar: "🐸" },
+        { name: "Панда-хипстер", avatar: "🐼" },
+        { name: "Зайчик", avatar: "🐰" }
+    ];
+
+    let currentCustomer = null;
+    let timerId = null;
+    let currentPatience = 100;
+
+    function togglePause() {
+        isPaused = !isPaused;
+        document.getElementById('pauseOverlay').style.display = isPaused ? 'flex' : 'none';
+        document.getElementById('pauseBtn').textContent = isPaused ? '▶ Играть' : '⏸ Пауза';
+    }
+
+    function toggleShop(show) {
+        document.getElementById('shopOverlay').style.display = show ? 'flex' : 'none';
+    }
+
+    // Покупка в магазине
+    function buyStock(type, amount, price) {
+        if (money >= price) {
+            money -= price;
+            stock[type] += amount;
+            updateUI();
+            showStatus(`🛒 Закуплено: +${amount} ${type === 'tea' ? 'чая' : type === 'syrup' ? 'сиропа' : 'шариков'}!`);
+        } else {
+            showStatus("❌ Недостаточно денег для заказа!");
+        }
+    }
+
+    function spawnCustomer() {
+        if (timerId) clearInterval(timerId);
+
+        const type = customerTypes[Math.floor(Math.random() * customerTypes.length)];
+        const reqTea = Math.floor(Math.random() * 3) + 1;
+        const reqSyrup = Math.floor(Math.random() * 2);   
+        const reqBoba = Math.floor(Math.random() * 6) + 2; 
+
+        const reward = (reqTea * 8) + (reqSyrup * 6) + (reqBoba * 2) + 12;
+
+        currentCustomer = {
+            ...type,
+            order: { tea: reqTea, syrup: reqSyrup, boba: reqBoba },
+            reward: reward
+        };
+
+        document.getElementById('cAvatar').textContent = currentCustomer.avatar;
+        document.getElementById('cName').textContent = currentCustomer.name;
+        
+        let orderHTML = `<span class="recipe-tag">🥛 Чай: ${reqTea}</span>`;
+        if (reqSyrup > 0) orderHTML += `<span class="recipe-tag">🍯 Сироп: ${reqSyrup}</span>`;
+        if (reqBoba > 0) orderHTML += `<span class="recipe-tag">⚫ Тапиока: ${reqBoba}</span>`;
+        document.getElementById('cOrder').innerHTML = orderHTML;
+
+        currentPatience = 100;
+        updatePatienceBar();
+        document.getElementById('serveBtn').disabled = false;
+        showStatus("");
+
+        timerId = setInterval(() => {
+            if (isPaused) return;
+
+            currentPatience -= 1.0;
+            updatePatienceBar();
+
+            if (currentPatience <= 0) {
+                clearInterval(timerId);
+                showStatus("❌ Клиент не дождался и ушел!");
+                document.getElementById('serveBtn').disabled = true;
+                setTimeout(spawnCustomer, 2000);
+            }
+        }, 300);
+    }
+
+    function updatePatienceBar() {
+        document.getElementById('patienceBar').style.width = `${Math.max(0, currentPatience)}%`;
+    }
+
+    function addIng(type, delta) {
+        if (isPaused) return;
+
+        if (delta > 0) {
+            if (stock[type] <= 0) {
+                showStatus(`⚠️ Закончился ${type === 'tea' ? 'чай' : type === 'syrup' ? 'сироп' : 'тапиока'}! Сварите или закажите.`);
+                return;
+            }
+            stock[type]--;
+            cup[type]++;
+            if (type === 'boba') spawnBobaBall();
+        } else {
+            if (cup[type] > 0) {
+                cup[type]--;
+                stock[type]++;
+                if (type === 'boba') balls.pop();
+            }
+        }
+        updateUI();
+    }
+
+    function cookIngredient(type) {
+        if (isPaused) return;
+        const btnMap = { tea: 'btnCookTea', syrup: 'btnCookSyrup', boba: 'btnCookBoba' };
+        const timeMap = { tea: 3000, syrup: 4000, boba: 5000 };
+        const yieldMap = { tea: 5, syrup: 5, boba: 10 };
+
+        const btn = document.getElementById(btnMap[type]);
+        btn.disabled = true;
+
+        setTimeout(() => {
+            stock[type] += yieldMap[type];
+            btn.disabled = false;
+            updateUI();
+            showStatus(`✨ Запасы пополнены! (+${yieldMap[type]} шт)`);
+        }, timeMap[type]);
+    }
+
+    function spawnBobaBall() {
+        const row = Math.floor(balls.length / 3);
+        const targetY = 182 - (row * 9);
+        const minX = 35 + (row * 1.2);
+        const maxX = 95 - (row * 1.2);
+
+        balls.push({
+            x: Math.random() * (maxX - minX) + minX,
+            y: 50,
+            radius: 5,
+            vy: 3 + Math.random() * 2,
+            targetY: targetY
+        });
+    }
+
+    function resetCup() {
+        if (isPaused) return;
+        stock.tea += cup.tea;
+        stock.syrup += cup.syrup;
+        stock.boba += cup.boba;
+
+        cup = { tea: 0, syrup: 0, boba: 0 };
+        balls = [];
+        updateUI();
+    }
+
+    function serveCustomer() {
+        if (isPaused || !currentCustomer) return;
+
+        const o = currentCustomer.order;
+        const isMatch = (cup.tea === o.tea) && (cup.syrup === o.syrup) && (cup.boba === o.boba);
+
+        clearInterval(timerId);
+
+        if (isMatch) {
+            const tip = Math.floor(currentPatience / 10);
+            const total = currentCustomer.reward + tip;
+            money += total;
+            showStatus(`✅ Отлично! +${total}$ (Чаевые: ${tip}$)`);
+        } else {
+            showStatus("❌ Ошибка в рецепте! Клиент ушел.");
+        }
+
+        document.getElementById('serveBtn').disabled = true;
+        cup = { tea: 0, syrup: 0, boba: 0 };
+        balls = [];
+        updateUI();
+
+        setTimeout(spawnCustomer, 2000);
+    }
+
+    function showStatus(text) {
+        document.getElementById('statusMsg').textContent = text;
+    }
+
+    function updateUI() {
+        document.getElementById('money').textContent = money;
+        document.getElementById('valTea').textContent = cup.tea;
+        document.getElementById('valSyrup').textContent = cup.syrup;
+        document.getElementById('valBoba').textContent = cup.boba;
+
+        document.getElementById('stockTea').textContent = stock.tea;
+        document.getElementById('stockSyrup').textContent = stock.syrup;
+        document.getElementById('stockBoba').textContent = stock.boba;
+    }
+
+    // Отрисовка с исправленным стаканом
+    function drawCup() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Координаты стакана опущены ниже, чтобы крышечка помещалась сверху
+        const topL = { x: 22, y: 50 };
+        const topR = { x: 108, y: 50 };
+        const botL = { x: 34, y: 188 };
+        const botR = { x: 96, y: 188 };
+        const totalHeight = botL.y - topL.y;
+
+        const maxTeaHeight = totalHeight - 28;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(topL.x, topL.y);
+        ctx.lineTo(topR.x, topR.y);
+        ctx.lineTo(botR.x, botR.y);
+        ctx.lineTo(botL.x, botL.y);
+        ctx.closePath();
+        ctx.clip();
+
+        // 1. Чай
+        const teaHeight = Math.min(maxTeaHeight, (cup.tea * (maxTeaHeight / 3)));
+        if (cup.tea > 0) {
+            ctx.fillStyle = 'rgba(224, 169, 109, 0.9)';
+            ctx.fillRect(0, botL.y - teaHeight, canvas.width, teaHeight);
+        }
+
+        // 2. Сироп
+        if (cup.syrup > 0) {
+            const syrupHeight = cup.syrup * 12;
+            const syrupY = botL.y - teaHeight - syrupHeight;
+            
+            ctx.fillStyle = 'rgba(150, 60, 20, 0.88)';
+            ctx.fillRect(0, syrupY, canvas.width, syrupHeight);
+        }
+
+        ctx.restore();
+
+        // 3. Тапиока
+        if (!isPaused) {
+            balls.forEach(ball => {
+                if (ball.y < ball.targetY) {
+                    ball.y += ball.vy;
+                    if (ball.y > ball.targetY) ball.y = ball.targetY;
+                }
+            });
+        }
+
+        balls.forEach(ball => {
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = '#1c100b';
+            ctx.fill();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = '#3a2318';
+            ctx.stroke();
+            ctx.closePath();
+        });
+
+        // 4. Контур стакана
+        ctx.beginPath();
+        ctx.moveTo(topL.x, topL.y);
+        ctx.lineTo(topR.x, topR.y);
+        ctx.lineTo(botR.x, botR.y);
+        ctx.lineTo(botL.x, botL.y);
+        ctx.closePath();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#634832';
+        ctx.stroke();
+
+        // Полная округлая крышка (не обрезается сверху)
+        ctx.beginPath();
+        ctx.arc(65, 50, 43, Math.PI, 0);
+        ctx.lineWidth = 2.5;
+        ctx.strokeStyle = '#8c6d53';
+        ctx.stroke();
+
+        // Соломинка
+        ctx.beginPath();
+        ctx.moveTo(70, 15);
+        ctx.lineTo(55, 170);
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = 'rgba(215, 120, 120, 0.7)';
+        ctx.stroke();
+    }
+
+    function animate() {
+        drawCup();
+        requestAnimationFrame(animate);
+    }
+
+    updateUI();
+    animate();
+    spawnCustomer();
+</script>
+
+</body>
+</html>

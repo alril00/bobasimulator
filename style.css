@@ -1,0 +1,339 @@
+* {
+    box-sizing: border-box;
+    touch-action: manipulation;
+}
+
+html,
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f7ede2;
+    color: #634832;
+    margin: 0;
+    padding: 16px;
+    /* Зафиксированный аккуратный внутренний отступ */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    /* Поднимаем блок к верху экрана, чтобы убрать лишнее пустое место сверху */
+    min-height: 100vh;
+    user-select: none;
+}
+
+.app-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100vh;
+    height: 100dvh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 10px;
+    background: #e3d5ca;
+    position: relative;
+}
+
+/* Хедер */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #d5bdaf;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.pause-btn {
+    background: #634832;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+/* Оверлеи (Пауза и Магазин) */
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(99, 72, 50, 0.85);
+    backdrop-filter: blur(4px);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: #fff;
+    z-index: 100;
+    padding: 20px;
+}
+
+.modal-card {
+    background: #f5ebe0;
+    color: #634832;
+    border-radius: 16px;
+    padding: 18px;
+    width: 100%;
+    max-width: 340px;
+    text-align: center;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.modal-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+/* Клиент и Крупный Заказ */
+.customer-section {
+    background: #f5ebe0;
+    border-radius: 14px;
+    padding: 10px;
+    margin-top: 6px;
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+}
+
+.customer-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.customer-avatar {
+    font-size: 38px;
+}
+
+.customer-info {
+    flex: 1;
+}
+
+.customer-title {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-bottom: 2px;
+}
+
+/* Крупная надпись названия заказа */
+.drink-name {
+    font-size: 18px;
+    font-weight: 800;
+    color: #8c4a27;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.recipe-tag {
+    background: #e3d5ca;
+    padding: 3px 7px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    display: inline-block;
+    margin-right: 4px;
+    margin-top: 2px;
+}
+
+.patience-bar {
+    height: 6px;
+    background: #e76f51;
+    border-radius: 3px;
+    margin-top: 8px;
+    transition: width 0.2s linear;
+}
+
+/* Игровая зона */
+.main-layout {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: space-between;
+    margin: 4px 0;
+}
+
+.glass-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+canvas {
+    background: transparent;
+    max-height: 200px;
+}
+
+/* Ингредиенты */
+.controls {
+    flex: 1.1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f5ebe0;
+    padding: 6px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+}
+
+.stock-count {
+    font-size: 10px;
+    color: #8c6d53;
+    display: block;
+}
+
+.btn-counter {
+    background: #d5bdaf;
+    border: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #634832;
+    font-size: 14px;
+}
+
+/* Блок Поставок */
+.farm-section {
+    background: #f5ebe0;
+    border-radius: 12px;
+    padding: 8px 10px;
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Маленькая кнопка Управление запасами слева */
+.shop-open-btn {
+    background: #b07d62;
+    color: #fff;
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+/* Список в окне Управления запасами */
+.shop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.shop-item-btn {
+    background: #d5bdaf;
+    color: #634832;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Сообщения внизу */
+.status-msg {
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 6px;
+    min-height: 16px;
+    color: #423021;
+}
+
+/* Нижние кнопки */
+.action-row {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    background: #634832;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 0 #423021;
+}
+
+.action-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #423021;
+}
+
+.action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-serve {
+    flex: 1;
+}
+
+.window {
+    position: relative;
+    background: #e3d5ca;
+    border: 4px solid #d5bdaf;
+    border-radius: 20px;
+    padding: 16px;
+    max-width: 480px; /* Ограничиваем максимальную ширину */
+    width: 100%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Компактный макет основного блока */
+.main-layout {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* Оптимизация блока управления кнопками */
+.controls {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Оптимальный отступ между строками ингредиентов */
+}
+
+/* Кнопка действия */
+.action-btn {
+    background: #634832;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 6px; /* Уменьшаем отступ сверху */
+    box-shadow: 0 4px 0 #423021;
+}
